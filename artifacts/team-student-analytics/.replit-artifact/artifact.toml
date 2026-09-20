@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Team & Student Performance Analytics Dashboard"
+description = "A full-stack analytics workspace for educators and team leads to manage student performance records, compare individual and group scores, and generate actionable AI insights."
+version = "1.0.0"
+id = "artifacts/team-student-analytics"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21674
+
+[services.development]
+run = "pnpm --filter @workspace/team-student-analytics run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/team-student-analytics", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/team-student-analytics/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21674"
+BASE_PATH = "/"

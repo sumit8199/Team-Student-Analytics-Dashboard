@@ -1,0 +1,375 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: students
+    description: Student performance records
+  - name: analytics
+    description: Performance analytics
+  - name: ai
+    description: AI-generated performance reports
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /students:
+    get:
+      operationId: listStudents
+      tags: [students]
+      summary: List student performance records
+      responses:
+        "200":
+          description: Student performance records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Student"
+    post:
+      operationId: createStudent
+      tags: [students]
+      summary: Create a student performance record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudentInput"
+      responses:
+        "201":
+          description: Created student performance record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+        "400":
+          description: Invalid student data
+  /students/{id}:
+    get:
+      operationId: getStudent
+      tags: [students]
+      summary: Get a student performance record
+      parameters:
+        - $ref: "#/components/parameters/StudentId"
+      responses:
+        "200":
+          description: Student performance record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+        "404":
+          description: Student not found
+    patch:
+      operationId: updateStudent
+      tags: [students]
+      summary: Update a student performance record
+      parameters:
+        - $ref: "#/components/parameters/StudentId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudentUpdate"
+      responses:
+        "200":
+          description: Updated student performance record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+        "400":
+          description: Invalid student data
+        "404":
+          description: Student not found
+    delete:
+      operationId: deleteStudent
+      tags: [students]
+      summary: Delete a student performance record
+      parameters:
+        - $ref: "#/components/parameters/StudentId"
+      responses:
+        "204":
+          description: Student performance record deleted
+        "404":
+          description: Student not found
+  /analytics/overview:
+    get:
+      operationId: getAnalyticsOverview
+      tags: [analytics]
+      summary: Get dashboard overview analytics
+      responses:
+        "200":
+          description: Overview analytics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OverviewAnalytics"
+  /analytics/team:
+    get:
+      operationId: getTeamAnalytics
+      tags: [analytics]
+      summary: Get team analytics
+      responses:
+        "200":
+          description: Team analytics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamAnalytics"
+  /ai/student-report:
+    post:
+      operationId: generateStudentReport
+      tags: [ai]
+      summary: Generate an AI report for one student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudentReportInput"
+      responses:
+        "200":
+          description: AI report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiReport"
+  /ai/team-report:
+    post:
+      operationId: generateTeamReport
+      tags: [ai]
+      summary: Generate an AI report for the team
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamReportInput"
+      responses:
+        "200":
+          description: AI report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiReport"
+components:
+  parameters:
+    StudentId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    Student:
+      type: object
+      required: [id, name, subject, score, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        subject:
+          type: string
+        score:
+          type: number
+          minimum: 0
+          maximum: 10
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    StudentInput:
+      type: object
+      required: [name, subject, score]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        subject:
+          type: string
+          minLength: 1
+        score:
+          type: number
+          minimum: 0
+          maximum: 10
+    StudentUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        subject:
+          type: string
+          minLength: 1
+        score:
+          type: number
+          minimum: 0
+          maximum: 10
+    SubjectAverage:
+      type: object
+      required: [subject, average, count]
+      properties:
+        subject:
+          type: string
+        average:
+          type: number
+        count:
+          type: integer
+    StudentScore:
+      type: object
+      required: [name, score]
+      properties:
+        name:
+          type: string
+        score:
+          type: number
+    OverviewAnalytics:
+      type: object
+      required: [totalStudents, overallAverage, topScore, subjectAverages, studentScores, radarData, heatmap]
+      properties:
+        totalStudents:
+          type: integer
+        overallAverage:
+          type: number
+        topScore:
+          type: number
+        subjectAverages:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubjectAverage"
+        studentScores:
+          type: array
+          items:
+            $ref: "#/components/schemas/StudentScore"
+        radarData:
+          type: array
+          items:
+            $ref: "#/components/schemas/RadarPoint"
+        heatmap:
+          type: array
+          items:
+            $ref: "#/components/schemas/HeatmapRow"
+    RadarPoint:
+      type: object
+      required: [subject, average]
+      properties:
+        subject:
+          type: string
+        average:
+          type: number
+    HeatmapRow:
+      type: object
+      required: [name, subjects]
+      properties:
+        name:
+          type: string
+        subjects:
+          type: object
+          additionalProperties:
+            type: number
+    TeamMemberAverage:
+      type: object
+      required: [name, average, contributionCount]
+      properties:
+        name:
+          type: string
+        average:
+          type: number
+        contributionCount:
+          type: integer
+    TeamAnalytics:
+      type: object
+      required: [groupAverage, totalContributors, subjectAverages, memberAverages, heatmap]
+      properties:
+        groupAverage:
+          type: number
+        totalContributors:
+          type: integer
+        subjectAverages:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubjectAverage"
+        memberAverages:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamMemberAverage"
+        heatmap:
+          type: array
+          items:
+            $ref: "#/components/schemas/HeatmapRow"
+    StudentReportInput:
+      type: object
+      required: [name, subject, score]
+      properties:
+        name:
+          type: string
+        subject:
+          type: string
+        score:
+          type: number
+          minimum: 0
+          maximum: 10
+    TeamReportInput:
+      type: object
+      required: [groupAverage, totalContributors, subjectAverages, memberAverages]
+      properties:
+        groupAverage:
+          type: number
+        totalContributors:
+          type: integer
+        subjectAverages:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubjectAverage"
+        memberAverages:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamMemberAverage"
+    AiReport:
+      type: object
+      required: [headline, summary, recommendations, generatedAt]
+      properties:
+        headline:
+          type: string
+        summary:
+          type: string
+        recommendations:
+          type: array
+          items:
+            type: string
+        generatedAt:
+          type: string
+          format: date-time
+
